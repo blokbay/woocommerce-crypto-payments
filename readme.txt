@@ -27,7 +27,7 @@ Blokbay never holds your money. For stablecoins and ETH a public smart contract 
 
 = Coins and networks =
 
-* USDC and USDT on Ethereum, Polygon, BNB Chain and Arbitrum.
+* USDC and USDT on Ethereum, Polygon, BNB Smart Chain (BSC) and Arbitrum.
 * USDC on Base.
 * ETH on Ethereum.
 * Bitcoin (BTC), for orders from 100 USD.
