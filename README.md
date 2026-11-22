@@ -1,4 +1,6 @@
-# Blokbay Crypto Gateway (WooCommerce)
+# WooCommerce Crypto Payment Gateway: Bitcoin, USDT, USDC, ETH (Blokbay)
+
+Accept crypto payments in WooCommerce: Bitcoin (BTC), Tether (USDT), USD Coin (USDC) and Ether (ETH) on Ethereum, BNB Smart Chain (BSC), Polygon, Base and Arbitrum. Non-custodial: every payment goes straight to your own wallet. 1% per payment, no monthly fee. Download the latest release: [Releases](../../releases/latest).
 
 Payment method for WooCommerce (WordPress). License GPL-2.0-or-later.
 
