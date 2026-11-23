@@ -50,13 +50,43 @@ class Blokbay_API {
 	}
 
 	/**
-	 * USD amount with 2 decimals, as a string ("249.90").
+	 * Currencies accepted by the Blokbay API, with their decimals (JPY has none). The buyer pays in crypto at the current
+	 * exchange rate; amount and currency come back in the payment and in webhooks exactly as sent.
+	 */
+	const CURRENCIES = array(
+		'USD' => 2,
+		'EUR' => 2,
+		'GBP' => 2,
+		'CHF' => 2,
+		'JPY' => 0,
+		'CAD' => 2,
+		'AUD' => 2,
+		'SGD' => 2,
+		'HKD' => 2,
+		'AED' => 2,
+	);
+
+	/**
+	 * True when the currency is accepted by Blokbay.
 	 *
-	 * @param float|string $value Amount.
+	 * @param string $currency ISO 4217 code.
+	 * @return bool
+	 */
+	public static function supported( $currency ) {
+		return isset( self::CURRENCIES[ strtoupper( (string) $currency ) ] );
+	}
+
+	/**
+	 * Amount as a string with the decimals of the currency ("249.90", JPY "25000").
+	 *
+	 * @param float|string $value    Amount.
+	 * @param string       $currency ISO 4217 code (default USD).
 	 * @return string
 	 */
-	public static function amount( $value ) {
-		return number_format( round( (float) $value, 2 ), 2, '.', '' );
+	public static function amount( $value, $currency = 'USD' ) {
+		$code = strtoupper( (string) $currency );
+		$dec  = isset( self::CURRENCIES[ $code ] ) ? self::CURRENCIES[ $code ] : 2;
+		return number_format( round( (float) $value, $dec ), $dec, '.', '' );
 	}
 
 	/**

@@ -109,12 +109,24 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * Only for stores priced in US dollars (Blokbay amounts are in USD).
+	 * Only for stores priced in a currency accepted by Blokbay (USD, EUR, GBP, CHF, JPY, CAD, AUD, SGD, HKD, AED).
 	 *
 	 * @return bool
 	 */
 	public function is_available() {
-		return 'yes' === $this->enabled && $this->get_option( 'secret_key' ) && 'USD' === get_woocommerce_currency() && parent::is_available();
+		return 'yes' === $this->enabled && $this->get_option( 'secret_key' ) && Blokbay_API::supported( get_woocommerce_currency() ) && parent::is_available();
+	}
+
+	/**
+	 * Settings page, with a notice when the store currency is not accepted by Blokbay (the method stays hidden at checkout).
+	 */
+	public function admin_options() {
+		$currency = get_woocommerce_currency();
+		if ( ! Blokbay_API::supported( $currency ) ) {
+			/* translators: 1: store currency, 2: list of accepted currencies. */
+			echo '<div class="notice notice-warning inline" id="blokbay-currency-warning"><p>' . esc_html( sprintf( __( 'Blokbay accepts prices in %2$s. This store works in %1$s, so the crypto payment method stays hidden at checkout.', 'blokbay-crypto-gateway' ), $currency, implode( ', ', array_keys( Blokbay_API::CURRENCIES ) ) ) ) . '</p></div>';
+		}
+		parent::admin_options();
 	}
 
 	/**
@@ -134,13 +146,14 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || 'USD' !== $order->get_currency() ) {
-			wc_add_notice( __( 'Crypto payments are available for orders in US dollars.', 'blokbay-crypto-gateway' ), 'error' );
+		if ( ! $order || ! Blokbay_API::supported( $order->get_currency() ) ) {
+			wc_add_notice( __( 'Crypto payments are not available for orders in this currency.', 'blokbay-crypto-gateway' ), 'error' );
 			return array( 'result' => 'failure' );
 		}
-		$fields = array(
-			'amount'         => Blokbay_API::amount( $order->get_total() ),
-			'currency'       => 'USD',
+		$currency = strtoupper( $order->get_currency() );
+		$fields   = array(
+			'amount'         => Blokbay_API::amount( $order->get_total(), $currency ),
+			'currency'       => $currency,
 			'reference'      => (string) $order->get_order_number(),
 			/* translators: %s: order number. */
 			'description'    => sprintf( __( 'Order %s', 'blokbay-crypto-gateway' ), $order->get_order_number() ),
@@ -148,8 +161,8 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 			'url_success'    => $this->get_return_url( $order ),
 			'url_cancel'     => $order->get_cancel_order_url_raw(),
 		);
-		// Same order, same amount: the same payment (safe retries). If that payment has expired, a new one.
-		$key = 'wc-' . $order->get_id() . '-' . $order->get_order_key() . '-' . Blokbay_API::amount( $order->get_total() );
+		// Same order, same amount and currency: the same payment (safe retries). If that payment has expired, a new one.
+		$key = 'wc-' . $order->get_id() . '-' . $order->get_order_key() . '-' . $fields['amount'] . ( 'USD' === $currency ? '' : '-' . $currency );
 		$res = $this->api()->create_payment( $fields, $key );
 		// The order key is random, so the key is unique per store; a payment of another order is still never used.
 		$foreign = ! empty( $res['id'] ) && ! self::matches_order( $res, $fields );
@@ -183,7 +196,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 		return isset( $payment['reference'], $payment['amount'], $payment['currency'] )
 			&& (string) $payment['reference'] === (string) $fields['reference']
 			&& (string) $payment['amount'] === (string) $fields['amount']
-			&& 'USD' === $payment['currency'];
+			&& (string) $payment['currency'] === (string) $fields['currency'];
 	}
 
 	/**
@@ -253,7 +266,8 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	public function apply_payment( $order, array $p ) {
 		$status = isset( $p['status'] ) ? $p['status'] : '';
 		if ( 'paid' === $status ) {
-			if ( Blokbay_API::amount( $order->get_total() ) !== ( isset( $p['amount'] ) ? $p['amount'] : '' ) || 'USD' !== ( isset( $p['currency'] ) ? $p['currency'] : '' ) ) {
+			$currency = strtoupper( $order->get_currency() );
+			if ( Blokbay_API::amount( $order->get_total(), $currency ) !== ( isset( $p['amount'] ) ? (string) $p['amount'] : '' ) || $currency !== ( isset( $p['currency'] ) ? $p['currency'] : '' ) ) {
 				$order->add_order_note( __( 'Blokbay: amount does not match the order, check it in the Blokbay dashboard.', 'blokbay-crypto-gateway' ) );
 				return array( 200, 'amount mismatch' );
 			}

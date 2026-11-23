@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Blokbay Crypto Gateway 1.0.0\n"
+"Project-Id-Version: Blokbay Crypto Gateway 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/blokbay-crypto-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -113,7 +113,12 @@ msgid "Leave as it is."
 msgstr ""
 
 #: includes/class-blokbay-wc-gateway.php:138
-msgid "Crypto payments are available for orders in US dollars."
+msgid "Crypto payments are not available for orders in this currency."
+msgstr ""
+
+#. translators: 1: store currency, 2: list of accepted currencies.
+#: includes/class-blokbay-wc-gateway.php
+msgid "Blokbay accepts prices in %2$s. This store works in %1$s, so the crypto payment method stays hidden at checkout."
 msgstr ""
 
 #. translators: %s: order number.
