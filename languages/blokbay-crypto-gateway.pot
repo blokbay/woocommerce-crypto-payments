@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Blokbay Crypto Gateway 1.1.0\n"
+"Project-Id-Version: Blokbay Crypto Payments for WooCommerce 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/blokbay-crypto-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: blokbay-crypto-gateway.php
-msgid "Blokbay Crypto Gateway"
+msgid "Blokbay Crypto Payments for WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin

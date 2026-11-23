@@ -1,4 +1,4 @@
-# Blokbay Crypto Gateway (WooCommerce)
+# Blokbay Crypto Payments for WooCommerce
 
 Payment method for WooCommerce (WordPress). License GPL-2.0-or-later.
 

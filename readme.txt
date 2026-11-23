@@ -1,6 +1,6 @@
-=== Blokbay Crypto Gateway ===
+=== Blokbay Crypto Payments for WooCommerce ===
 Contributors: blokbay
-Tags: crypto payments, bitcoin, usdc, woocommerce, payment gateway
+Tags: crypto payments, bitcoin, usdt, usdc, woocommerce
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -9,7 +9,7 @@ Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept Bitcoin, USDC, USDT and ETH in WooCommerce. Funds go straight to your own wallet. 1% per payment, no monthly fee.
+Accept crypto payments in WooCommerce: Bitcoin, USDT, USDC and ETH, paid straight to your own wallet. 1% per payment, no monthly fee.
 
 == Description ==
 
