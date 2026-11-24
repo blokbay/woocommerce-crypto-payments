@@ -45,7 +45,7 @@ class Blokbay_API {
 	 */
 	public function __construct( $secret_key, $base = self::DEFAULT_BASE, $transport = null ) {
 		$this->secret_key = trim( (string) $secret_key );
-		$this->base       = rtrim( $base ? $base : self::DEFAULT_BASE, '/' );
+		$this->base       = rtrim( $base ? (string) $base : self::DEFAULT_BASE, '/' );
 		$this->transport  = $transport;
 	}
 
@@ -159,8 +159,9 @@ class Blokbay_API {
 		$args = array(
 			'method'      => $method,
 			'headers'     => $headers,
-			'timeout'     => 20,
-			'redirection' => 0,
+			'timeout'             => 20,
+			'redirection'         => 0,
+			'limit_response_size' => 65536,
 		);
 		if ( null !== $body ) {
 			$args['body'] = $body;

@@ -62,8 +62,8 @@ final class Blokbay_WC_Blocks extends AbstractPaymentMethodType {
 	 */
 	public function get_payment_method_data() {
 		return array(
-			'title'       => isset( $this->settings['title'] ) ? $this->settings['title'] : __( 'Pay with crypto', 'blokbay-crypto-gateway' ),
-			'description' => isset( $this->settings['description'] ) ? $this->settings['description'] : '',
+			'title'       => isset( $this->settings['title'] ) ? wp_strip_all_tags( (string) $this->settings['title'] ) : __( 'Pay with crypto', 'blokbay-crypto-gateway' ),
+			'description' => isset( $this->settings['description'] ) ? wp_strip_all_tags( (string) $this->settings['description'] ) : '',
 			'supports'    => array( 'products' ),
 		);
 	}

@@ -70,7 +70,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 				'title'       => __( 'Webhook signing secret', 'blokbay-crypto-gateway' ),
 				'type'        => 'password',
 				/* translators: %s: webhook address of this store, to paste in the Blokbay dashboard. */
-				'description' => sprintf( __( 'whsec_... In Blokbay set the webhook URL to: %s', 'blokbay-crypto-gateway' ), esc_html( self::webhook_url() ) ),
+				'description' => sprintf( __( 'whsec_... In Blokbay set the webhook URL to: %s', 'blokbay-crypto-gateway' ), '<code>' . esc_html( self::webhook_url() ) . '</code>' ),
 			),
 			'base_url'       => array(
 				'title'       => __( 'API address', 'blokbay-crypto-gateway' ),
@@ -82,6 +82,50 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Secret key: only the characters of a Blokbay key are kept.
+	 *
+	 * @param string $key   Field key.
+	 * @param string $value Posted value.
+	 * @return string
+	 */
+	public function validate_secret_key_field( $key, $value ) {
+		return self::clean_key( $value );
+	}
+
+	/**
+	 * Public key: only the characters of a Blokbay key are kept.
+	 *
+	 * @param string $key   Field key.
+	 * @param string $value Posted value.
+	 * @return string
+	 */
+	public function validate_public_key_field( $key, $value ) {
+		return self::clean_key( $value );
+	}
+
+	/**
+	 * Webhook signing secret: only the characters of a Blokbay key are kept.
+	 *
+	 * @param string $key   Field key.
+	 * @param string $value Posted value.
+	 * @return string
+	 */
+	public function validate_webhook_secret_field( $key, $value ) {
+		return self::clean_key( $value );
+	}
+
+	/**
+	 * Blokbay keys (sk_live_..., pk_live_..., whsec_...) are made of letters, digits and underscores.
+	 *
+	 * @param mixed $value Posted value.
+	 * @return string
+	 */
+	private static function clean_key( $value ) {
+		$value = is_scalar( $value ) ? sanitize_text_field( wp_unslash( (string) $value ) ) : '';
+		return substr( (string) preg_replace( '/[^A-Za-z0-9_]/', '', $value ), 0, 128 );
+	}
+
+	/**
 	 * Keeps the API address on https (http only for a local test server).
 	 *
 	 * @param string $key   Field key.
@@ -89,7 +133,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function validate_base_url_field( $key, $value ) {
-		$url    = esc_url_raw( trim( (string) $value ), array( 'https', 'http' ) );
+		$url    = esc_url_raw( trim( is_scalar( $value ) ? sanitize_text_field( wp_unslash( (string) $value ) ) : '' ), array( 'https', 'http' ) );
 		$scheme = wp_parse_url( $url, PHP_URL_SCHEME );
 		$host   = wp_parse_url( $url, PHP_URL_HOST );
 		$local  = in_array( $host, array( 'localhost', '127.0.0.1' ), true );
@@ -135,7 +179,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	 * @return Blokbay_API
 	 */
 	public function api() {
-		return new Blokbay_API( $this->get_option( 'secret_key' ), $this->get_option( 'base_url', Blokbay_API::DEFAULT_BASE ) );
+		return new Blokbay_API( $this->get_option( 'secret_key' ), esc_url_raw( (string) $this->get_option( 'base_url', Blokbay_API::DEFAULT_BASE ), array( 'https', 'http' ) ) );
 	}
 
 	/**
@@ -157,7 +201,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 			'reference'      => (string) $order->get_order_number(),
 			/* translators: %s: order number. */
 			'description'    => sprintf( __( 'Order %s', 'blokbay-crypto-gateway' ), $order->get_order_number() ),
-			'customer_email' => (string) $order->get_billing_email(),
+			'customer_email' => sanitize_email( (string) $order->get_billing_email() ),
 			'url_success'    => $this->get_return_url( $order ),
 			'url_cancel'     => $order->get_cancel_order_url_raw(),
 		);
@@ -169,20 +213,59 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 		if ( $foreign || ( isset( $res['status'] ) && 'expired' === $res['status'] ) ) {
 			$res = $this->api()->create_payment( $fields, $key . '-' . time() );
 		}
-		if ( empty( $res['id'] ) || empty( $res['url'] ) || ! self::matches_order( $res, $fields ) ) {
+		// The answer of the API is validated before use: payment id format, payment page on the API host, same order.
+		$payment_id = isset( $res['id'] ) && is_string( $res['id'] ) && preg_match( '/^gp_[a-z0-9]{1,64}$/', $res['id'] ) ? $res['id'] : '';
+		$pay_url    = $this->payment_page_url( isset( $res['url'] ) ? $res['url'] : '' );
+		if ( '' === $payment_id || '' === $pay_url || ! self::matches_order( $res, $fields ) ) {
 			wc_add_notice( __( 'The crypto payment could not be created. Please try again or choose another method.', 'blokbay-crypto-gateway' ), 'error' );
 			if ( function_exists( 'wc_get_logger' ) ) {
-				wc_get_logger()->warning( 'Blokbay: ' . ( isset( $res['error'] ) ? $res['error'] : 'error' ), array( 'source' => 'blokbay' ) );
+				$error = isset( $res['error'] ) && is_scalar( $res['error'] ) ? sanitize_text_field( (string) $res['error'] ) : 'error';
+				wc_get_logger()->warning( 'Blokbay: ' . $error, array( 'source' => 'blokbay' ) );
 			}
 			return array( 'result' => 'failure' );
 		}
-		$order->update_meta_data( self::META_ID, $res['id'] );
+		$order->update_meta_data( self::META_ID, $payment_id );
 		$order->update_status( 'pending', __( 'Waiting for the crypto payment (Blokbay).', 'blokbay-crypto-gateway' ) );
 		$order->save();
 		return array(
 			'result'   => 'success',
-			'redirect' => $res['url'],
+			'redirect' => $pay_url,
 		);
+	}
+
+	/**
+	 * Address of the payment page returned by the API: a clean http(s) URL on the same host as the API, or an empty string.
+	 *
+	 * @param mixed $url Address returned by the API.
+	 * @return string
+	 */
+	private function payment_page_url( $url ) {
+		$url  = is_string( $url ) ? esc_url_raw( $url, array( 'https', 'http' ) ) : '';
+		$host = $url ? wp_parse_url( $url, PHP_URL_HOST ) : '';
+		$base = wp_parse_url( (string) $this->get_option( 'base_url', Blokbay_API::DEFAULT_BASE ), PHP_URL_HOST );
+		if ( ! $base ) {
+			$base = wp_parse_url( Blokbay_API::DEFAULT_BASE, PHP_URL_HOST );
+		}
+		return ( $host && strtolower( $host ) === strtolower( $base ) ) ? $url : '';
+	}
+
+	/**
+	 * Keeps only the fields of a Blokbay payment that the plugin uses, each one sanitized as plain text.
+	 *
+	 * @param mixed $payment Payment decoded from a webhook or from an API answer.
+	 * @return array
+	 */
+	public static function clean_payment( $payment ) {
+		$clean = array();
+		if ( ! is_array( $payment ) ) {
+			return $clean;
+		}
+		foreach ( array( 'id', 'status', 'amount', 'currency', 'reference', 'coin', 'network', 'tx' ) as $field ) {
+			if ( isset( $payment[ $field ] ) && is_scalar( $payment[ $field ] ) ) {
+				$clean[ $field ] = sanitize_text_field( (string) $payment[ $field ] );
+			}
+		}
+		return $clean;
 	}
 
 	/**
@@ -204,13 +287,32 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	 * the request comes from the Blokbay server, not from a logged-in user).
 	 */
 	public function webhook() {
-		$raw                = (string) file_get_contents( 'php://input' );
-		$header             = isset( $_SERVER['HTTP_BLOKBAY_SIGNATURE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_BLOKBAY_SIGNATURE'] ) ) : '';
+		// The HMAC signature is computed on the exact raw body, so it is read unmodified (through the WordPress core helper) and then
+		// validated: size limit, signature check and JSON decoding happen in handle_webhook() before any value is used.
+		$raw    = self::raw_body();
+		$header = isset( $_SERVER['HTTP_BLOKBAY_SIGNATURE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_BLOKBAY_SIGNATURE'] ) ) : '';
+		if ( ! preg_match( '/^t=\d{1,12},v1=[0-9a-f]{64}$/', $header ) ) {
+			$header = '';
+		}
 		list( $code, $msg ) = $this->handle_webhook( $raw, $header );
 		status_header( $code );
+		nocache_headers();
 		header( 'Content-Type: text/plain; charset=utf-8' );
 		echo esc_html( $msg );
 		exit;
+	}
+
+	/**
+	 * Raw request body of the webhook, at most 64 KB (Blokbay events are a few hundred bytes).
+	 *
+	 * @return string
+	 */
+	private static function raw_body() {
+		if ( ! class_exists( 'WP_REST_Server' ) ) {
+			require_once ABSPATH . WPINC . '/rest-api/class-wp-rest-server.php';
+		}
+		$raw = (string) WP_REST_Server::get_raw_data();
+		return strlen( $raw ) > 65536 ? '' : $raw;
 	}
 
 	/**
@@ -226,17 +328,20 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 			return array( 400, 'bad signature' );
 		}
 		$ev = json_decode( $raw, true );
-		if ( ! is_array( $ev ) || empty( $ev['type'] ) ) {
+		if ( ! is_array( $ev ) || empty( $ev['type'] ) || ! is_string( $ev['type'] ) ) {
 			return array( 400, 'bad payload' );
 		}
-		$pk = trim( (string) $this->get_option( 'public_key' ) );
-		if ( $pk && ( ! isset( $ev['account'] ) || $ev['account'] !== $pk ) ) {
+		// Every value of the event is sanitized here, before it is compared, stored or shown.
+		$type    = sanitize_text_field( $ev['type'] );
+		$account = isset( $ev['account'] ) && is_string( $ev['account'] ) ? sanitize_text_field( $ev['account'] ) : '';
+		$pk      = trim( (string) $this->get_option( 'public_key' ) );
+		if ( $pk && ! hash_equals( $pk, $account ) ) {
 			return array( 400, 'other account' );
 		}
-		if ( 'ping' === $ev['type'] ) {
+		if ( 'ping' === $type ) {
 			return array( 200, 'pong' );
 		}
-		$p = isset( $ev['data'] ) && is_array( $ev['data'] ) ? $ev['data'] : array();
+		$p = self::clean_payment( isset( $ev['data'] ) ? $ev['data'] : array() );
 		if ( empty( $p['id'] ) ) {
 			return array( 400, 'no payment' );
 		}
@@ -264,6 +369,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	 * @return array{0: int, 1: string}
 	 */
 	public function apply_payment( $order, array $p ) {
+		$p      = self::clean_payment( $p );
 		$status = isset( $p['status'] ) ? $p['status'] : '';
 		if ( 'paid' === $status ) {
 			$currency = strtoupper( $order->get_currency() );
@@ -346,8 +452,8 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 		if ( ! $order || $order->is_paid() ) {
 			return;
 		}
-		$id = $order->get_meta( self::META_ID );
-		if ( ! $id ) {
+		$id = (string) $order->get_meta( self::META_ID );
+		if ( ! preg_match( '/^gp_[a-z0-9]{1,64}$/', $id ) ) {
 			return;
 		}
 		$p = $this->api()->get_payment( $id );

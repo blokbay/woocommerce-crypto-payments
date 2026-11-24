@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.1.0
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,7 +62,7 @@ This plugin connects to the Blokbay payments service (https://blokbay.com), whic
 
 What is sent and when:
 
-* When the customer places an order with this method, the plugin sends to `https://blokbay.com/api/v1/payments`, with your secret key: the order total in the store currency, the currency, the order number, a description ("Order 123"), the billing email of the customer, the address of the order received page and the address of the cancel page. The customer is then redirected to the Blokbay payment page `https://blokbay.com/pay/<payment id>`.
+* When the customer places an order with this method, the plugin sends to `https://blokbay.com/api/v1/payments`, with your secret key: the order total in the store currency, the currency, the order number, a description ("Order 123"), the billing email of the customer, the address of the order received page and the address of the cancel page (both contain the order key), and an `Idempotency-Key` header built from the order id, the order key and the amount, so that a repeated checkout reuses the same payment. The customer is then redirected to the Blokbay payment page `https://blokbay.com/pay/<payment id>`.
 * When the customer returns to the order received page and the order is not yet paid, the plugin asks `https://blokbay.com/api/v1/payments/<payment id>` for the payment status (no customer data is sent).
 * Blokbay sends signed webhook requests to your store (`https://your-store/?wc-api=blokbay`) when a payment is paid or expires. The plugin only reads them.
 
@@ -127,6 +127,13 @@ Use the support forum of this plugin or write to mail@blokbay.com.
 
 == Changelog ==
 
+= 1.1.2 =
+* Hardening: every value received from the Blokbay API and from webhooks is sanitized and validated before use (payment id, payment page address, order note fields); the keys saved in the settings are sanitized on save.
+* Uninstall removes the settings on every site of a multisite network.
+
+= 1.1.1 =
+* Webhook: the raw body is read through the WordPress core helper, limited in size and validated (signature format, HMAC, JSON) before use.
+
 = 1.1.0 =
 * Store currencies USD, EUR, GBP, CHF, JPY, CAD, AUD, SGD, HKD and AED: the order total is sent in the store currency and checked in the same currency on every webhook. Notice in the settings for other currencies.
 
@@ -134,6 +141,12 @@ Use the support forum of this plugin or write to mail@blokbay.com.
 * First release: classic checkout and checkout block, HPOS, signed webhooks, status check on the order received page.
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+Stricter sanitization and validation of API answers, webhooks and settings.
+
+= 1.1.1 =
+Webhook input hardening.
 
 = 1.1.0 =
 Stores in EUR, GBP, CHF, JPY, CAD, AUD, SGD, HKD and AED can now accept crypto payments.
