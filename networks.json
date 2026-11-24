@@ -1,0 +1,11 @@
+{
+  "gatewayContract": "0xd4b637cC81D5B5115Cd0204A9ba6B60474F05e31",
+  "networks": [
+    { "name": "BNB Smart Chain", "aliases": ["BSC", "BNB Chain"], "chainId": 56, "assets": ["USDC", "USDT"], "explorer": "https://bscscan.com" },
+    { "name": "Ethereum", "chainId": 1, "assets": ["ETH", "USDC", "USDT"], "explorer": "https://etherscan.io" },
+    { "name": "Polygon", "chainId": 137, "assets": ["USDC", "USDT"], "explorer": "https://polygonscan.com" },
+    { "name": "Base", "chainId": 8453, "assets": ["USDC"], "explorer": "https://basescan.org" },
+    { "name": "Arbitrum One", "chainId": 42161, "assets": ["USDC", "USDT"], "explorer": "https://arbiscan.io" },
+    { "name": "Bitcoin", "assets": ["BTC"], "minOrderUsd": 100 }
+  ]
+}
