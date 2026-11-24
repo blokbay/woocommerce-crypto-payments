@@ -2,8 +2,8 @@
 /**
  * Plugin Name:          Blokbay Crypto Payments for WooCommerce
  * Plugin URI:           https://blokbay.com/crypto-payment-gateway
- * Description:          Accept BTC, USDC, USDT and ETH. Funds go from the buyer directly to your wallet in the same transaction. 1% per payment, no monthly fee.
- * Version:              1.1.2
+ * Description:          Accept USDT, USDC, ETH, BTC and SOL. Funds go from the buyer directly to your wallet. 1% per payment, no monthly fee.
+ * Version:              1.2.0
  * Requires at least:    6.6
  * Requires PHP:         7.4
  * Requires Plugins:     woocommerce
@@ -21,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BLOKBAY_WC_VERSION', '1.1.2' );
+define( 'BLOKBAY_WC_VERSION', '1.2.0' );
 define( 'BLOKBAY_WC_FILE', __FILE__ );
 
 /**

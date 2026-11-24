@@ -21,14 +21,14 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 	public function __construct() {
 		$this->id                 = 'blokbay';
 		$this->method_title       = __( 'Crypto (Blokbay)', 'blokbay-crypto-gateway' );
-		$this->method_description = __( 'Accept BTC, USDC, USDT and ETH. Funds go directly to your wallet. 1% per payment, no fixed costs.', 'blokbay-crypto-gateway' );
+		$this->method_description = __( 'Accept USDT, USDC, ETH, BTC and SOL, paid from a wallet or an exchange. Funds go directly to your wallet. 1% per payment, no fixed costs.', 'blokbay-crypto-gateway' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products' );
 		$this->icon               = plugins_url( 'assets/images/crypto.svg', BLOKBAY_WC_FILE );
 		$this->init_form_fields();
 		$this->init_settings();
 		$this->title       = $this->get_option( 'title', __( 'Pay with crypto', 'blokbay-crypto-gateway' ) );
-		$this->description = $this->get_option( 'description', __( 'Pay with BTC, USDC, USDT or ETH from your wallet.', 'blokbay-crypto-gateway' ) );
+		$this->description = $this->get_option( 'description', __( 'Pay in crypto: USDT, USDC, ETH, BTC or SOL, from your wallet or an exchange', 'blokbay-crypto-gateway' ) );
 		$this->enabled     = $this->get_option( 'enabled', 'no' );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		add_action( 'woocommerce_api_blokbay', array( $this, 'webhook' ) );
@@ -54,7 +54,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 			'description'    => array(
 				'title'   => __( 'Description', 'blokbay-crypto-gateway' ),
 				'type'    => 'textarea',
-				'default' => __( 'Pay with BTC, USDC, USDT or ETH from your wallet.', 'blokbay-crypto-gateway' ),
+				'default' => __( 'Pay in crypto: USDT, USDC, ETH, BTC or SOL, from your wallet or an exchange', 'blokbay-crypto-gateway' ),
 			),
 			'secret_key'     => array(
 				'title'       => __( 'Secret key', 'blokbay-crypto-gateway' ),
@@ -381,7 +381,7 @@ class Blokbay_WC_Gateway extends WC_Payment_Gateway {
 				return array( 200, 'already paid' );
 			}
 			$tx = isset( $p['tx'] ) ? (string) $p['tx'] : '';
-			/* translators: 1: coin (USDC, USDT, ETH, BTC), 2: network, 3: transaction hash. */
+			/* translators: 1: coin (USDT, USDC, ETH, BTC, SOL), 2: network, 3: transaction hash. */
 			$order->add_order_note( sprintf( __( 'Blokbay: paid in %1$s on %2$s. Transaction %3$s', 'blokbay-crypto-gateway' ), isset( $p['coin'] ) ? $p['coin'] : '', isset( $p['network'] ) ? $p['network'] : '', $tx ) );
 			$order->payment_complete( $tx );
 			return array( 200, 'paid' );

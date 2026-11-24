@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Blokbay Crypto Payments for WooCommerce 1.1.2\n"
+"Project-Id-Version: Blokbay Crypto Payments for WooCommerce 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/blokbay-crypto-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #. Description of the plugin
 #: blokbay-crypto-gateway.php
-msgid "Accept BTC, USDC, USDT and ETH. Funds go from the buyer directly to your wallet in the same transaction. 1% per payment, no monthly fee."
+msgid "Accept USDT, USDC, ETH, BTC and SOL. Funds go from the buyer directly to your wallet. 1% per payment, no monthly fee."
 msgstr ""
 
 #. Author of the plugin
@@ -54,12 +54,12 @@ msgid "Crypto (Blokbay)"
 msgstr ""
 
 #: includes/class-blokbay-wc-gateway.php:24
-msgid "Accept BTC, USDC, USDT and ETH. Funds go directly to your wallet. 1% per payment, no fixed costs."
+msgid "Accept USDT, USDC, ETH, BTC and SOL, paid from a wallet or an exchange. Funds go directly to your wallet. 1% per payment, no fixed costs."
 msgstr ""
 
 #: includes/class-blokbay-wc-gateway.php:31
 #: includes/class-blokbay-wc-gateway.php:57
-msgid "Pay with BTC, USDC, USDT or ETH from your wallet."
+msgid "Pay in crypto: USDT, USDC, ETH, BTC or SOL, from your wallet or an exchange"
 msgstr ""
 
 #: includes/class-blokbay-wc-gateway.php:44
@@ -140,7 +140,7 @@ msgstr ""
 msgid "Blokbay: amount does not match the order, check it in the Blokbay dashboard."
 msgstr ""
 
-#. translators: 1: coin (USDC, USDT, ETH, BTC), 2: network, 3: transaction hash.
+#. translators: 1: coin (USDT, USDC, ETH, BTC, SOL), 2: network, 3: transaction hash.
 #: includes/class-blokbay-wc-gateway.php:385
 #, php-format
 msgid "Blokbay: paid in %1$s on %2$s. Transaction %3$s"

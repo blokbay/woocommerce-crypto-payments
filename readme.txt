@@ -5,32 +5,34 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept crypto payments in WooCommerce: Bitcoin, USDT, USDC and ETH, paid straight to your own wallet. 1% per payment, no monthly fee.
+Accept crypto payments in WooCommerce: USDT, USDC, ETH, BTC and SOL, paid straight to your own wallet. 1% per payment, no monthly fee.
 
 == Description ==
 
-Blokbay adds a "Pay with crypto" method to your WooCommerce checkout. Your customer pays on a Blokbay payment page with your store name and logo, then returns to your store. The order is marked as paid when the signed confirmation (webhook) arrives.
+Blokbay adds a "Pay with crypto" method to your WooCommerce checkout. Your customer pays on a Blokbay payment page with your store name and logo, then returns to your store. On that page the customer chooses the coin and the network (and can change them before paying), then pays from a connected wallet, or by address and QR code from any wallet or exchange. A confirmation page opens as soon as the payment arrives. The order is marked as paid when the signed confirmation (webhook) arrives.
 
 = Funds go directly to your wallet =
 
-Blokbay never holds your money. For stablecoins and ETH a public smart contract splits each payment in the same transaction: you receive your share in your own wallet the moment the buyer pays. For Bitcoin the buyer makes two exact transfers, one of them to your address. There is no balance on our side, so there are no funds to be held, frozen or released later.
+Blokbay never holds your money. When the buyer pays from a connected wallet, each payment is split in the same transaction (by a public smart contract on the EVM networks): you receive your share in your own wallet the moment the buyer pays. When the buyer pays by address and QR code, they make two exact transfers, one of them to your address (Bitcoin always works this way). On Base, orders from 10 USD can also be paid with a single transfer to a one-time payment address: a public contract with no owner and no withdrawal function, which forwards your share to your wallet. There is no balance on our side, so there are no funds to be held, frozen or released later.
 
 = Simple pricing =
 
 * 1% of each payment, withheld automatically: you receive 99%.
 * No monthly fee, no setup fee, no fixed cost per transaction.
-* The buyer pays the network fee of their own transfer.
+* The buyer pays the network fee of their own transfer. With the one-time payment address on Base the buyer also pays a small network cost for the split, which they avoid by connecting a wallet.
 
 = Coins and networks =
 
-* USDC and USDT on Ethereum, Polygon, BNB Smart Chain (BSC) and Arbitrum.
+* USDT and USDC on Ethereum, BNB Smart Chain (BSC), Arbitrum, Polygon and Solana.
 * USDC on Base.
-* ETH on Ethereum.
+* ETH on Ethereum, Base and Arbitrum.
+* SOL on Solana.
 * Bitcoin (BTC), for orders from the equivalent of 100 USD.
+* Payment from a connected wallet (browser or phone), or by address and QR code from any wallet or exchange.
 
 = Final payments =
 
@@ -52,7 +54,7 @@ Open your Blokbay account with your email, add your wallet address, create your 
 = Requirements =
 
 * Store currency: USD, EUR, GBP, CHF, JPY, CAD, AUD, SGD, HKD or AED. The buyer pays in crypto at the current exchange rate.
-* A Blokbay account (free) and a wallet address for each coin you want to accept.
+* A Blokbay account (free) and a wallet address for each coin you want to accept: an EVM address (USDT, USDC and ETH), a Solana address (USDT, USDC and SOL on Solana) and a Bitcoin address.
 
 You remain the seller: you are responsible for your store, your products and your obligations towards your customers, including taxes and invoices.
 
@@ -84,7 +86,7 @@ No data is sent to any other service, and the plugin does not collect usage stat
 
 = Does Blokbay hold my money? =
 
-No. Stablecoin and ETH payments go through a public smart contract that sends your share to your wallet in the same transaction. Bitcoin payments are two transfers made by the buyer, one of them to your address. Blokbay has no balance in your name.
+No. Payments from a connected wallet are split in the same transaction and your share goes straight to your wallet. Payments by address and QR code are two exact transfers made by the buyer, one of them to your address (Bitcoin always works this way); the one-time payment address on Base is a public contract with no owner and no withdrawal function, which forwards your share to your wallet. Blokbay has no balance in your name.
 
 = How much does it cost? =
 
@@ -93,6 +95,10 @@ No. Stablecoin and ETH payments go through a public smart contract that sends yo
 = Which currency must my store use? =
 
 USD, EUR, GBP, CHF, JPY, CAD, AUD, SGD, HKD or AED. The amount is converted to crypto at the current public exchange rate, locked when the buyer chooses the coin. For other store currencies the method is hidden at checkout and the settings page shows a notice.
+
+= Which coins can my customers use? =
+
+USDT and USDC on Ethereum, BNB Smart Chain, Arbitrum, Polygon and Solana, USDC on Base, ETH on Ethereum, Base and Arbitrum, SOL on Solana and Bitcoin (from the equivalent of 100 USD). The customer can pay from a connected wallet or by address and QR code from any wallet or exchange, and sees only the coins for which you added an address.
 
 = Can a buyer reverse a payment? =
 
@@ -104,7 +110,7 @@ When the payment is confirmed on the blockchain and the signed webhook reaches y
 
 = What happens if the customer does not pay? =
 
-The payment page stays open for 24 hours. Once the customer picks a coin, the payment must be sent within 2 hours for stablecoins, 15 minutes for ETH (the price is locked for that time) or 3 hours for the first Bitcoin transfer. If nothing arrives, the payment expires and the pending order is cancelled.
+The payment page stays open for 24 hours. Once the customer picks a coin, the page shows how long the amount is locked (from 15 minutes to a few hours, depending on the coin and on how the customer pays). If nothing arrives in time, the payment expires and the pending order is cancelled.
 
 = Does it work with the checkout block and HPOS? =
 
@@ -127,6 +133,11 @@ Use the support forum of this plugin or write to mail@blokbay.com.
 
 == Changelog ==
 
+= 1.2.0 =
+* Updated texts: USDT, USDC, ETH, BTC and SOL, all the networks of the payment page, payment from a connected wallet or by address and QR code from any wallet or exchange.
+* New default checkout description for new installations: "Pay in crypto: USDT, USDC, ETH, BTC or SOL, from your wallet or an exchange". A description you already saved is not changed.
+* No change to how the plugin works.
+
 = 1.1.2 =
 * Hardening: every value received from the Blokbay API and from webhooks is sanitized and validated before use (payment id, payment page address, order note fields); the keys saved in the settings are sanitized on save.
 * Uninstall removes the settings on every site of a multisite network.
@@ -141,6 +152,9 @@ Use the support forum of this plugin or write to mail@blokbay.com.
 * First release: classic checkout and checkout block, HPOS, signed webhooks, status check on the order received page.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Text update only (coins, networks and ways to pay). Your saved settings are not changed.
 
 = 1.1.2 =
 Stricter sanitization and validation of API answers, webhooks and settings.
